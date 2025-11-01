@@ -1,0 +1,270 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 17
+            },
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5523c43b-9275-4daf-97d3-a8de8864d7e8",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ZAJk2GiyRpQJz_g_tdCmL5EDnaFPyvnduArMgTwQpUU",
+          "mode": "list",
+          "cachedResultName": "AttendanceDB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZAJk2GiyRpQJz_g_tdCmL5EDnaFPyvnduArMgTwQpUU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Totals",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZAJk2GiyRpQJz_g_tdCmL5EDnaFPyvnduArMgTwQpUU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "af28eb08-6fea-453b-b765-8cf16087947e",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "q7g86XSo89XjuHvH",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "073a1e77-db2c-47f3-9258-4eb12c895ab3",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.Telegram_ID }}",
+        "text": "=Hey {{$json[\"Name\"]}}! How many classes did you attend today? (0–6)",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        16
+      ],
+      "id": "421dadf0-15a1-409d-a23d-96de2131a4d3",
+      "name": "Send a text message",
+      "webhookId": "3b627ed4-db15-49d4-ac79-a2e0bcd37843",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q6wGhtJQOlVCvL02",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        192
+      ],
+      "id": "3cfc7dda-1073-4a75-b142-bbe7765c8692",
+      "name": "Telegram Trigger",
+      "webhookId": "0346f9f7-28fc-4d7a-ad20-2dc59b9426c6",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q6wGhtJQOlVCvL02",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ZAJk2GiyRpQJz_g_tdCmL5EDnaFPyvnduArMgTwQpUU",
+          "mode": "list",
+          "cachedResultName": "AttendanceDB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZAJk2GiyRpQJz_g_tdCmL5EDnaFPyvnduArMgTwQpUU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 224461871,
+          "mode": "list",
+          "cachedResultName": "Holidays",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZAJk2GiyRpQJz_g_tdCmL5EDnaFPyvnduArMgTwQpUU/edit#gid=224461871"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        192
+      ],
+      "id": "6a74ba02-67db-4a8d-aea8-cd5d5bf82ad2",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "q7g86XSo89XjuHvH",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Inputs\nconst totalSoFar = $json[\"Total_Classes_So_Far\"];  // e.g. 403\nconst attended = $json[\"Attended\"];\nconst endSem = new Date($json[\"End_Sem_Date\"]);\nconst today = new Date();\nconst attendedToday = Number($input.item.json.message); // reply (0–6)\n\n// Holidays from the other sheet\nconst holidays = $items(\"Google Sheets - Read (HolidayList)\", 0, 0)\n  .map(r => new Date(r.json.Date));\n\n// Helper: exclude Sundays, 2nd/4th Saturdays, holidays\nfunction countWorkingDays(start, end) {\n  let count = 0;\n  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {\n    const day = d.getDay();\n    const date = new Date(d);\n    const isHoliday = holidays.some(h => h.toDateString() === date.toDateString());\n    const isSecondSat =\n      day === 6 && Math.ceil(date.getDate() / 7) === 2;\n    const isFourthSat =\n      day === 6 && Math.ceil(date.getDate() / 7) === 4;\n    if (day !== 0 && !isHoliday && !isSecondSat && !isFourthSat) count++;\n  }\n  return count;\n}\n\nconst remainingDays = countWorkingDays(today, endSem);\nconst remainingClasses = remainingDays * 6; // max 6/day\n\n// Update today's progress\nconst newTotal = totalSoFar + 6;      // 6 classes conducted today\nconst newAttended = attended + attendedToday;\n\n// Future projection\nconst totalFuture = newTotal + remainingClasses;\nconst needed = 0.75 * totalFuture - newAttended;\n\nlet msg;\nif (needed <= 0) {\n  msg = `Great! You’re already above 75%. Keep attending regularly.`;\n} else if (needed > remainingClasses) {\n  msg = `Not possible to reach 75%. Make sure to attend all remaining classes.`;\n} else {\n  msg = `Attend at least ${Math.ceil(needed)} of ${remainingClasses} remaining classes to reach 75%.`;\n}\n\nreturn [{ json: { message: msg } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        192
+      ],
+      "id": "82fac0c7-4385-4877-bb12-19bae6930186",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        192
+      ],
+      "id": "425c20e8-50a2-4116-ab8c-2c0bbbf7cc7b",
+      "name": "Send a text message1",
+      "webhookId": "8497631d-eacc-4f27-8f87-d110bd83f5ff",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q6wGhtJQOlVCvL02",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c5f03bac-da28-4c89-bf44-79c4ee91e8b4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "485fc2f48db277aaaffa3ad966aff49f4e665baf8d933e07365121f345ff0c73"
+  },
+  "id": "DUf8m6g8d1zTFveK",
+  "tags": []
+}
