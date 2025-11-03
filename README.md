@@ -106,3 +106,7 @@ GEMINI_API_KEY=<your_api_key_here>
 ## Summary
 This n8n-based workflow demonstrates how to chain together AI creativity (Gemini + LangChain) and automated video production (Sisif API) inside a simple, low-code system.
 It allows anyone to scale content ideation and production using only visual workflow building and standard web APIs.
+
+## Project Presentation
+PPT: https://www.canva.com/design/DAG3ecbiIG4/oCgyfSZmweMTngSZbzQzNw/edit?utm_content=DAG3ecbiIG4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+Video Explanation: https://drive.google.com/file/d/1WWywlW_ZzPSxHEAww38JhFNi6k1TLON3/view?usp=sharing
