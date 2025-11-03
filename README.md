@@ -109,4 +109,5 @@ It allows anyone to scale content ideation and production using only visual work
 
 ## Project Presentation
 PPT: https://www.canva.com/design/DAG3ecbiIG4/oCgyfSZmweMTngSZbzQzNw/edit?utm_content=DAG3ecbiIG4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
 Video Explanation: https://drive.google.com/file/d/1WWywlW_ZzPSxHEAww38JhFNi6k1TLON3/view?usp=sharing
